@@ -1,0 +1,857 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Meu Plano">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#E9F1FA" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#111829" media="(prefers-color-scheme: dark)">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="icon-192.png">
+<link rel="manifest" href="manifest.webmanifest">
+<title>Meu Plano</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Patrick+Hand&display=swap">
+<style>
+/* Layout: menu lateral (gaveta no celular) com três telas. Visual tirado dos stickers da Lalá: azul-marinho do notebook, azul da camisa, faíscas amarelas, coração rosa, checklist verde, peças com contorno branco de adesivo. */
+:root{
+  --bg:#E9F1FA; --surface:#FFFFFF; --ink:#1B2540; --muted:#55627F; --line:#D2DDEC;
+  --navy:#1B2540; --on-navy:#FFFFFF; --sky:#A9CCEC; --spark:#F5B723; --heart:#D9487A; --heart-soft:#FCE4EC;
+  --check:#23884A; --check-soft:#DDF3E4; --warn:#B4540A; --col:#DCE8F6; --shadow:rgba(27,37,64,.12);
+  --display:"Patrick Hand","Nunito","Comic Sans MS",cursive;
+  --body:"Nunito",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#111829; --surface:#1C2640; --ink:#EEF3FB; --muted:#A3B2CE; --line:#2F3C5E;
+    --navy:#A9CCEC; --on-navy:#111829; --sky:#35507A; --spark:#F7C340; --heart:#F58CB0; --heart-soft:#40233A;
+    --check:#57C783; --check-soft:#1B3A2C; --warn:#F0A35E; --col:#172038; --shadow:rgba(0,0,0,.35);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#111829; --surface:#1C2640; --ink:#EEF3FB; --muted:#A3B2CE; --line:#2F3C5E;
+  --navy:#A9CCEC; --on-navy:#111829; --sky:#35507A; --spark:#F7C340; --heart:#F58CB0; --heart-soft:#40233A;
+  --check:#57C783; --check-soft:#1B3A2C; --warn:#F0A35E; --col:#172038; --shadow:rgba(0,0,0,.35);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+img{max-width:100%}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;padding-bottom:env(safe-area-inset-bottom,0px);background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.45}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+h1,h2,h3{font-family:var(--display);font-weight:400;margin:0;line-height:1.1;text-wrap:balance}
+h1{font-size:34px} h2{font-size:26px} h3{font-size:23px}
+ul,ol{list-style:none;margin:0;padding:0}
+p{margin:0}
+
+/* estrutura */
+.side{position:fixed;z-index:30;top:0;bottom:0;left:0;width:min(280px,82vw);background:var(--surface);
+  padding:calc(20px + env(safe-area-inset-top,0px)) 16px calc(20px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));
+  display:flex;flex-direction:column;gap:20px;transform:translateX(-105%);visibility:hidden;transition:transform .22s,visibility .22s;box-shadow:4px 0 24px var(--shadow)}
+.nav-open .side{transform:none;visibility:visible}
+.scrim{position:fixed;inset:0;z-index:20;background:rgba(10,14,28,.5);border:0;padding:0}
+.brand{display:flex;align-items:center;gap:10px}
+.brand img{width:72px;height:72px;flex:none;border-radius:22px;object-fit:cover;border:3px solid var(--surface);box-shadow:0 2px 0 var(--line),0 6px 14px var(--shadow)}
+/* P&L */
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr));gap:12px}
+.tile{padding:14px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.tile span{font-size:13px;font-weight:800;color:var(--muted)}
+.tile b{font-family:var(--display);font-weight:400;font-size:30px;line-height:1.1;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.pos{color:var(--check)} .neg{color:var(--warn)}
+.entry{display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:2px dashed var(--line);border-top:0;border-left:0;border-right:0;background:none;width:100%;text-align:left;font:inherit;color:inherit;cursor:pointer}
+li:last-child > .entry{border-bottom:0}
+.entry-main{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.entry-main b{font-weight:700;overflow-wrap:anywhere}
+.entry-main span{font-size:12px;color:var(--muted);font-weight:700}
+.entry-val{flex:none;font-weight:800;font-variant-numeric:tabular-nums}
+.brand b{font-family:var(--display);font-weight:400;font-size:24px;line-height:1.05}
+.nav{display:flex;flex-direction:column;gap:6px}
+.nav a{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:14px;color:var(--ink);text-decoration:none;font-weight:700}
+.nav a svg{flex:none;width:20px;height:20px}
+.nav a[aria-current="page"]{background:var(--spark);color:#1B2540}
+.side-foot{margin-top:auto;font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.topbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;background:var(--bg);display:flex;align-items:center;gap:10px;padding-block:10px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.topbar b{font-family:var(--display);font-weight:400;font-size:22px}
+.icon-btn{width:44px;height:44px;border-radius:14px;border:0;background:var(--surface);color:var(--ink);display:grid;place-items:center;cursor:pointer;box-shadow:0 2px 0 var(--line)}
+.content{padding-block:8px 56px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));max-width:1100px}
+.view{display:flex;flex-direction:column;gap:18px}
+.view-head{display:flex;align-items:center;gap:12px}
+.view-head img{width:92px;height:auto;flex:none}
+.view-head > div{min-width:0;display:flex;flex-direction:column;gap:4px}
+.sub{color:var(--muted);font-size:15px}
+.spark{display:inline-block;width:22px;height:22px;vertical-align:-2px;margin-left:4px}
+.status{padding:10px 14px;border-radius:14px;background:var(--heart-soft);font-size:14px;font-weight:600;margin-bottom:12px}
+.empty{color:var(--muted);font-size:15px}
+@media (min-width:860px){
+  .side{transform:none;visibility:visible;box-shadow:none;width:250px;border-right:2px solid var(--line)}
+  .main{margin-left:250px}
+  .topbar{display:none}
+  .scrim{display:none}
+  .content{padding-block:32px 56px;padding-left:32px}
+}
+
+/* peças tipo adesivo */
+.sticker{background:var(--surface);border-radius:20px;box-shadow:0 2px 0 var(--line),0 8px 18px var(--shadow)}
+.btn{font:inherit;font-size:14px;font-weight:800;border-radius:999px;padding:10px 16px;cursor:pointer;border:2px solid var(--line);background:var(--surface);color:var(--ink)}
+.btn.primary{background:var(--navy);border-color:var(--navy);color:var(--on-navy)}
+.btn.ghost{border-color:transparent;background:none;color:var(--ink);padding:10px 8px;text-decoration:underline;text-decoration-color:var(--spark);text-decoration-thickness:3px;text-underline-offset:4px}
+.btn.danger{border-color:transparent;background:none;color:var(--warn);padding:10px 8px}
+.btn.small{font-size:13px;padding:7px 12px}
+:focus-visible{outline:3px solid var(--spark);outline-offset:2px}
+
+/* passos */
+.step{display:flex;align-items:flex-start;gap:8px;padding:10px 0;border-bottom:2px dashed var(--line)}
+.step:last-child{border-bottom:0}
+.rank{flex:none;width:20px;padding-top:9px;font-family:var(--display);font-size:20px;line-height:1.1;color:var(--muted);text-align:right;font-variant-numeric:tabular-nums}
+.check{flex:none;width:40px;height:40px;border:0;background:none;padding:0;cursor:pointer;display:grid;place-items:center;border-radius:12px}
+.check::before{content:"";width:24px;height:24px;border-radius:7px;border:2.5px solid var(--ink);background:var(--surface);display:block}
+.check[aria-pressed="true"]::before{border-color:var(--check);background:var(--check) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M5.5 12.5l4.2 4.2 8.8-9.4' fill='none' stroke='white' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/20px no-repeat}
+.step-body{flex:1;min-width:0;border:0;background:none;padding:8px 0;text-align:left;font:inherit;color:inherit;cursor:pointer;display:flex;flex-direction:column;gap:6px;border-radius:8px}
+.step-title{font-weight:700;overflow-wrap:anywhere}
+.step.done .step-title{color:var(--muted);text-decoration:line-through;font-weight:600}
+.detail{font-size:14px;color:var(--muted);white-space:pre-line;overflow-wrap:anywhere}
+.meta{display:flex;flex-wrap:wrap;gap:6px;font-size:12px}
+.meta:empty{display:none}
+.chip{padding:2px 9px;border-radius:999px;background:var(--col);color:var(--ink);font-weight:700;font-variant-numeric:tabular-nums}
+.chip.alta{background:var(--heart-soft);color:var(--heart)}
+.chip.trend{background:var(--spark);color:#1B2540}
+.chip.late{background:none;color:var(--warn);padding-left:0}
+.panel{padding:6px 14px}
+.filters{display:flex;flex-wrap:wrap;gap:8px}
+.filters .btn[aria-pressed="true"]{background:var(--navy);border-color:var(--navy);color:var(--on-navy)}
+
+/* objetivos */
+.goals{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:16px;align-items:start}
+.goal{padding:18px 14px 8px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.goal-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.goal-head > div{min-width:0;display:flex;flex-direction:column;gap:4px}
+.why{color:var(--muted);font-size:14px;overflow-wrap:anywhere}
+.prog{display:flex;align-items:center;gap:10px;font-size:13px;font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums}
+.bar{flex:1;height:10px;border-radius:999px;background:var(--col);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--check);border-radius:999px;transition:width .3s}
+.goal-foot{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;padding-bottom:6px}
+
+/* kanban */
+.board-wrap{overflow-x:auto;padding-bottom:10px;scroll-snap-type:x proximity}
+.board{display:grid;grid-auto-flow:column;grid-auto-columns:min(78vw,300px);gap:12px;align-items:start}
+@media (min-width:1100px){.board{grid-auto-flow:row;grid-template-columns:repeat(4,minmax(0,1fr))}}
+.col{background:var(--col);border-radius:20px;padding:12px;display:flex;flex-direction:column;gap:10px;scroll-snap-align:start;min-width:0}
+.col-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.col-head h3{font-size:22px;display:flex;align-items:center;gap:8px}
+.dot{width:12px;height:12px;border-radius:50%;flex:none}
+.count{font-size:13px;font-weight:800;color:var(--muted);font-variant-numeric:tabular-nums}
+.kcard{padding:10px 12px 6px;display:flex;flex-direction:column;gap:4px;border-radius:16px}
+.kcard-body{border:0;background:none;padding:0;text-align:left;font:inherit;color:inherit;cursor:pointer;display:flex;flex-direction:column;gap:4px;border-radius:8px;min-width:0}
+.kcard-title{font-weight:800;overflow-wrap:anywhere}
+.kcard-note{font-size:13px;color:var(--muted);white-space:pre-line;overflow-wrap:anywhere}
+.kmove{display:flex;justify-content:space-between}
+.kmove button{width:40px;height:36px;border:0;background:none;color:var(--muted);cursor:pointer;border-radius:10px;font-size:18px;font-weight:800}
+.kmove button:disabled{opacity:.25;cursor:default}
+.add-card{border:2px dashed var(--muted);background:none;color:var(--ink);font:inherit;font-weight:800;font-size:14px;border-radius:16px;padding:10px;cursor:pointer}
+
+/* diálogos */
+dialog{border:0;border-radius:22px;background:var(--surface);color:var(--ink);padding:20px;width:min(460px,calc(100vw - 32px));max-height:calc(100vh - 48px)}
+dialog::backdrop{background:rgba(10,14,28,.6)}
+dialog form{display:flex;flex-direction:column;gap:14px}
+label{display:flex;flex-direction:column;gap:5px;font-size:13px;font-weight:800;color:var(--muted)}
+input,select,textarea{font:inherit;font-size:16px;font-weight:600;color:var(--ink);background:var(--bg);border:2px solid var(--line);border-radius:12px;padding:10px 12px;width:100%;min-width:0}
+textarea{resize:vertical;min-height:84px}
+.row{display:flex;gap:10px}
+.row > label{flex:1;min-width:0}
+.actions{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.actions > div{display:flex;gap:8px}
+@media (prefers-reduced-motion: reduce){.side,.bar i{transition:none}}
+.backup{padding:16px;display:flex;flex-direction:column;gap:12px}
+.backup p{font-size:15px}
+.backup .btns{display:flex;flex-wrap:wrap;gap:10px}
+.note{font-size:14px;color:var(--muted)}
+</style>
+</head>
+<body>
+
+<aside class="side" id="side" aria-label="Menu">
+  <div class="brand">
+    <img src="avatar.jpg" alt="" width="360" height="360">
+    <b>Plano Insta<br>e Ebook</b>
+  </div>
+  <nav class="nav">
+    <a href="#objetivos" data-view="objetivos">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/></svg>Objetivos</a>
+    <a href="#proximos" data-view="proximos">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7l2 2 3-4M4 16l2 2 3-4M13 7h7M13 16h7"/></svg>Próximos passos</a>
+    <a href="#kanban" data-view="kanban">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="5" height="16" rx="1.5"/><rect x="10" y="4" width="5" height="10" rx="1.5"/><rect x="17" y="4" width="4" height="13" rx="1.5"/></svg>Kanban</a>
+    <a href="#pl" data-view="pl">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M21 20H3"/></svg>P&amp;L do ebook</a>
+    <a href="#backup" data-view="backup">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10l5 5 5-5M4 20h16"/></svg>Backup</a>
+  </nav>
+  <p class="side-foot" id="side-foot">Carregando…</p>
+</aside>
+<button class="scrim" id="scrim" type="button" aria-label="Fechar menu" hidden></button>
+
+<div class="main">
+  <div class="topbar">
+    <button class="icon-btn" id="menu-btn" type="button" aria-label="Abrir menu" aria-controls="side" aria-expanded="false">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+    </button>
+    <b id="top-title">Objetivos</b>
+  </div>
+
+  <div class="content">
+    <p class="status" id="status" hidden></p>
+
+    <section class="view" id="v-objetivos">
+      <div class="view-head">
+        <img src="s-pm.png" alt="" width="176" height="200">
+        <div>
+          <h1>Objetivos<svg class="spark" viewBox="0 0 24 24" fill="none" stroke="var(--spark)" stroke-width="3" stroke-linecap="round"><path d="M5 20l3-5M12 21v-6M19 20l-3-5"/></svg></h1>
+          <p class="sub" id="sum-objetivos">Carregando seus objetivos…</p>
+        </div>
+      </div>
+      <div class="goals" id="goals"><p class="empty">Cada objetivo aparece aqui com o progresso e os passos dele.</p></div>
+      <div><button class="btn primary" id="add-goal" type="button">Novo objetivo</button></div>
+    </section>
+
+    <section class="view" id="v-proximos" hidden>
+      <div class="view-head">
+        <img src="s-check.png" alt="" width="199" height="195">
+        <div>
+          <h1>Próximos passos</h1>
+          <p class="sub" id="sum-proximos">O que fazer, em ordem de prioridade e prazo.</p>
+        </div>
+      </div>
+      <div class="filters" id="filters"></div>
+      <div id="next"><p class="empty">Os passos em aberto aparecem aqui, com o detalhe de como fazer.</p></div>
+    </section>
+
+    <section class="view" id="v-kanban" hidden>
+      <div class="view-head">
+        <img src="s-fone.png" alt="" width="200" height="180">
+        <div>
+          <h1>Kanban</h1>
+          <p class="sub" id="sum-kanban">Seus projetos e em que pé cada um está.</p>
+        </div>
+      </div>
+      <div class="board-wrap"><div class="board" id="board"><p class="empty">Seus projetos aparecem aqui em colunas.</p></div></div>
+    </section>
+
+    <section class="view" id="v-pl" hidden>
+      <div class="view-head">
+        <div>
+          <h1>P&amp;L do ebook</h1>
+          <p class="sub" id="sum-pl">Receitas e custos do ebook, lançados por você.</p>
+        </div>
+      </div>
+      <div class="tiles">
+        <div class="tile sticker"><span>Receita</span><b id="pl-rec">R$ 0,00</b></div>
+        <div class="tile sticker"><span>Custos</span><b id="pl-cus">R$ 0,00</b></div>
+        <div class="tile sticker"><span>Resultado</span><b id="pl-res">R$ 0,00</b></div>
+      </div>
+      <div><button class="btn primary" id="add-entry" type="button">Novo lançamento</button></div>
+      <div id="ledger"><p class="empty">Nenhum lançamento ainda. Registre aqui cada venda e cada custo (taxa da plataforma, registro, anúncio) para ver o resultado.</p></div>
+    </section>
+
+    <section class="view" id="v-backup" hidden>
+      <div class="view-head">
+        <div>
+          <h1>Backup</h1>
+          <p class="sub" id="sum-backup">Seus dados ficam guardados só neste aparelho.</p>
+        </div>
+      </div>
+      <div class="backup sticker">
+        <h3>Salvar uma cópia</h3>
+        <p>Gera um arquivo com seus objetivos, passos, kanban e P&amp;L. Guarde em Arquivos ou no iCloud. Faça isso de vez em quando e sempre antes de trocar de celular.</p>
+        <div class="btns"><button class="btn primary" id="bk-save" type="button">Salvar backup</button></div>
+      </div>
+      <div class="backup sticker">
+        <h3>Restaurar uma cópia</h3>
+        <p>Escolha um arquivo de backup. Ele substitui tudo o que está neste aparelho.</p>
+        <label for="bk-file">Arquivo de backup
+          <input id="bk-file" type="file" accept=".json,application/json">
+        </label>
+        <p class="note" id="bk-info" hidden></p>
+        <div class="btns"><button class="btn primary" id="bk-restore" type="button" hidden>Restaurar e substituir</button></div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<dialog id="step-dlg">
+  <form id="step-form">
+    <h2 id="step-dlg-title">Novo passo</h2>
+    <label for="step-title">O que precisa ser feito
+      <input id="step-title" type="text" required maxlength="200" autocomplete="off">
+    </label>
+    <label for="step-detail">Como fazer (detalhes)
+      <textarea id="step-detail" maxlength="1500"></textarea>
+    </label>
+    <div class="row">
+      <label for="step-goal">Objetivo
+        <select id="step-goal"></select>
+      </label>
+      <label for="step-tag">Tipo
+        <select id="step-tag">
+          <option value="acao">Ação</option>
+          <option value="conteudo">Conteúdo</option>
+          <option value="trend">Trend</option>
+        </select>
+      </label>
+    </div>
+    <div class="row">
+      <label for="step-due">Prazo
+        <input id="step-due" type="date">
+      </label>
+      <label for="step-pri">Prioridade
+        <select id="step-pri">
+          <option value="alta">Alta</option>
+          <option value="media">Média</option>
+          <option value="baixa">Baixa</option>
+        </select>
+      </label>
+    </div>
+    <div class="actions">
+      <button class="btn danger" type="button" id="step-del">Excluir</button>
+      <div>
+        <button class="btn" type="button" data-close>Cancelar</button>
+        <button class="btn primary" type="submit">Salvar</button>
+      </div>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="goal-dlg">
+  <form id="goal-form">
+    <h2 id="goal-dlg-title">Novo objetivo</h2>
+    <label for="goal-title">Objetivo
+      <input id="goal-title" type="text" required maxlength="120" autocomplete="off">
+    </label>
+    <label for="goal-why">Por que isso importa
+      <textarea id="goal-why" maxlength="400"></textarea>
+    </label>
+    <label for="goal-due">Data alvo
+      <input id="goal-due" type="date">
+    </label>
+    <div class="actions">
+      <button class="btn danger" type="button" id="goal-del">Excluir</button>
+      <div>
+        <button class="btn" type="button" data-close>Cancelar</button>
+        <button class="btn primary" type="submit">Salvar</button>
+      </div>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="card-dlg">
+  <form id="card-form">
+    <h2 id="card-dlg-title">Novo projeto</h2>
+    <label for="card-title">Projeto
+      <input id="card-title" type="text" required maxlength="120" autocomplete="off">
+    </label>
+    <label for="card-note">Anotação
+      <textarea id="card-note" maxlength="600"></textarea>
+    </label>
+    <label for="card-col">Coluna
+      <select id="card-col"></select>
+    </label>
+    <div class="actions">
+      <button class="btn danger" type="button" id="card-del">Excluir</button>
+      <div>
+        <button class="btn" type="button" data-close>Cancelar</button>
+        <button class="btn primary" type="submit">Salvar</button>
+      </div>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="entry-dlg">
+  <form id="entry-form">
+    <h2 id="entry-dlg-title">Novo lançamento</h2>
+    <div class="row">
+      <label for="entry-type">Tipo
+        <select id="entry-type">
+          <option value="receita">Receita</option>
+          <option value="custo">Custo</option>
+        </select>
+      </label>
+      <label for="entry-date">Data
+        <input id="entry-date" type="date" required>
+      </label>
+    </div>
+    <label for="entry-desc">Descrição
+      <input id="entry-desc" type="text" required maxlength="140" autocomplete="off" placeholder="Ex.: 3 vendas, taxa da plataforma">
+    </label>
+    <label for="entry-amount">Valor em reais
+      <input id="entry-amount" type="text" inputmode="decimal" required autocomplete="off" placeholder="0,00">
+    </label>
+    <div class="actions">
+      <button class="btn danger" type="button" id="entry-del">Excluir</button>
+      <div>
+        <button class="btn" type="button" data-close>Cancelar</button>
+        <button class="btn primary" type="submit">Salvar</button>
+      </div>
+    </div>
+  </form>
+</dialog>
+
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var db = null, goals = [], steps = [], cards = [], got = { g: false, s: false, c: false };
+  var showDone = {}, filter = 'all', editStep = null, editGoal = null, editCard = null, busy = {};
+  var PR = { alta: 0, media: 1, baixa: 2 };
+  var TAG = { acao: '', conteudo: 'Conteúdo', trend: 'Trend' };
+  var COLS = [['afazer', 'A fazer', 'var(--spark)'], ['fazendo', 'Fazendo', 'var(--sky)'], ['aguardando', 'Aguardando', 'var(--heart)'], ['feito', 'Feito', 'var(--check)']];
+  var VIEWS = { objetivos: 'Objetivos', proximos: 'Próximos passos', kanban: 'Kanban', pl: 'P&L do ebook', backup: 'Backup' };
+  var ledger = [], gotL = false, editEntry = null;
+  function brl(n) {
+    try { return Number(n || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); }
+    catch (e) { return 'R$ ' + Number(n || 0).toFixed(2).replace('.', ','); }
+  }
+  function parseAmount(s) {
+    s = String(s).trim().replace(/[^\d.,]/g, '');
+    if (s.indexOf(',') >= 0) s = s.replace(/\./g, '').replace(',', '.');
+    var n = Number(s);
+    return isFinite(n) && n > 0 ? Math.round(n * 100) / 100 : null;
+  }
+  function renderLedger() {
+    var rec = 0, cus = 0;
+    ledger.forEach(function (e) { if (e.type === 'custo') cus += Number(e.amount) || 0; else rec += Number(e.amount) || 0; });
+    var res = rec - cus;
+    $('pl-rec').textContent = brl(rec);
+    $('pl-cus').textContent = brl(cus);
+    $('pl-res').textContent = brl(res);
+    $('pl-res').className = res > 0 ? 'pos' : res < 0 ? 'neg' : '';
+    $('sum-pl').textContent = ledger.length
+      ? ledger.length + (ledger.length === 1 ? ' lançamento' : ' lançamentos') + '. Resultado = receita menos custos.'
+      : 'Receitas e custos do ebook, lançados por você.';
+    if (!ledger.length) {
+      $('ledger').innerHTML = '<p class="empty">Nenhum lançamento ainda. Registre aqui cada venda e cada custo (taxa da plataforma, registro, anúncio) para ver o resultado.</p>';
+      return;
+    }
+    var sorted = ledger.slice().sort(function (a, b) { return String(b.date || '').localeCompare(String(a.date || '')) || (b.order || 0) - (a.order || 0); });
+    $('ledger').innerHTML = '<ul class="panel sticker">' + sorted.map(function (e) {
+      var c = e.type === 'custo';
+      return '<li><button type="button" class="entry" data-act="edit-entry" data-id="' + esc(e.id) + '">' +
+        '<span class="entry-main"><b>' + esc(e.desc) + '</b><span>' + (c ? 'Custo' : 'Receita') + (e.date ? ' · ' + fmt(e.date) + ' ' + esc(String(e.date).slice(0, 4)) : '') + '</span></span>' +
+        '<span class="entry-val ' + (c ? 'neg' : 'pos') + '">' + (c ? '− ' : '+ ') + brl(e.amount) + '</span></button></li>';
+    }).join('') + '</ul>';
+  }
+  function openEntry(e) {
+    editEntry = e || null;
+    $('entry-dlg-title').textContent = e ? 'Editar lançamento' : 'Novo lançamento';
+    $('entry-type').value = e && e.type === 'custo' ? 'custo' : 'receita';
+    $('entry-date').value = e && e.date ? e.date : today();
+    $('entry-desc').value = e ? e.desc || '' : '';
+    $('entry-amount').value = e ? String(Number(e.amount || 0).toFixed(2)).replace('.', ',') : '';
+    resetDel($('entry-del'), !e);
+    $('entry-dlg').showModal();
+  }
+  var MES = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+  function today() {
+    var d = new Date();
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  }
+  function fmt(d) {
+    if (!d || !/^\d{4}-\d{2}-\d{2}$/.test(d)) return '';
+    var p = d.split('-');
+    return Number(p[2]) + ' ' + MES[Number(p[1]) - 1];
+  }
+  function say(msg) {
+    var el = $('status');
+    if (!msg) { el.hidden = true; return; }
+    el.textContent = msg; el.hidden = false;
+  }
+  function ok() { say(''); }
+  function fail(e) {
+    say('Não deu para salvar neste aparelho. Faça um backup e libere espaço no iPhone.');
+  }
+  function goalOf(id) { return goals.find(function (g) { return g.id === id; }); }
+  function byOrder(a, b) { return (a.order || 0) - (b.order || 0); }
+  function byUrgency(a, b) {
+    var p = (PR[a.priority] == null ? 1 : PR[a.priority]) - (PR[b.priority] == null ? 1 : PR[b.priority]);
+    if (p) return p;
+    var da = a.due || '9999', dbb = b.due || '9999';
+    if (da !== dbb) return da < dbb ? -1 : 1;
+    return byOrder(a, b);
+  }
+
+  /* navegação */
+  function current() {
+    var h = (location.hash || '').replace('#', '');
+    return VIEWS[h] ? h : 'objetivos';
+  }
+  function showView() {
+    var v = current();
+    Object.keys(VIEWS).forEach(function (k) { $('v-' + k).hidden = k !== v; });
+    document.querySelectorAll('.nav a').forEach(function (a) {
+      if (a.dataset.view === v) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
+    });
+    $('top-title').textContent = VIEWS[v];
+    closeNav();
+    window.scrollTo(0, 0);
+  }
+  function openNav() { document.body.classList.add('nav-open'); $('scrim').hidden = false; $('menu-btn').setAttribute('aria-expanded', 'true'); }
+  function closeNav() { document.body.classList.remove('nav-open'); $('scrim').hidden = true; $('menu-btn').setAttribute('aria-expanded', 'false'); }
+  $('menu-btn').addEventListener('click', openNav);
+  $('scrim').addEventListener('click', closeNav);
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeNav(); });
+  document.querySelectorAll('.nav a').forEach(function (a) { a.addEventListener('click', closeNav); });
+  window.addEventListener('hashchange', showView);
+  showView();
+
+  /* desenho */
+  function stepRow(s, o) {
+    o = o || {};
+    var chips = '';
+    if (!s.done && s.priority === 'alta') chips += '<span class="chip alta">♥ Prioridade alta</span>';
+    if (TAG[s.tag]) chips += '<span class="chip' + (s.tag === 'trend' ? ' trend' : '') + '">' + TAG[s.tag] + '</span>';
+    if (o.goal) { var g = goalOf(s.goalId); if (g) chips += '<span class="chip">' + esc(g.title) + '</span>'; }
+    if (s.due) {
+      var late = !s.done && s.due < today();
+      chips += '<span class="chip' + (late ? ' late' : '') + '">' + (late ? 'Atrasado · ' : '') + fmt(s.due) + '</span>';
+    }
+    return '<li class="step' + (s.done ? ' done' : '') + '">' +
+      (o.rank ? '<span class="rank">' + o.rank + '</span>' : '') +
+      '<button type="button" class="check" data-act="toggle" data-id="' + esc(s.id) + '" aria-pressed="' + (s.done ? 'true' : 'false') +
+      '" aria-label="' + (s.done ? 'Reabrir: ' : 'Marcar como feito: ') + esc(s.title) + '"></button>' +
+      '<button type="button" class="step-body" data-act="edit-step" data-id="' + esc(s.id) + '">' +
+      '<span class="step-title">' + esc(s.title) + '</span>' +
+      (o.detail && s.detail ? '<span class="detail">' + esc(s.detail) + '</span>' : '') +
+      '<span class="meta">' + chips + '</span></button></li>';
+  }
+
+  function renderGoals() {
+    var total = steps.length, done = steps.filter(function (s) { return s.done; }).length;
+    var line = total ? done + ' de ' + total + ' passos feitos' : 'Nenhum passo cadastrado ainda';
+    $('sum-objetivos').textContent = goals.length ? goals.length + (goals.length === 1 ? ' objetivo · ' : ' objetivos · ') + line : line;
+    $('side-foot').textContent = line;
+    if (!goals.length) { $('goals').innerHTML = '<p class="empty">Nenhum objetivo ainda. Toque em Novo objetivo para criar o primeiro.</p>'; return; }
+    $('goals').innerHTML = goals.slice().sort(byOrder).map(function (g) {
+      var mine = steps.filter(function (s) { return s.goalId === g.id; });
+      var op = mine.filter(function (s) { return !s.done; }).sort(byUrgency);
+      var dn = mine.filter(function (s) { return s.done; }).sort(function (a, b) { return String(b.doneAt || '').localeCompare(String(a.doneAt || '')); });
+      var pct = mine.length ? Math.round(dn.length / mine.length * 100) : 0;
+      var list = op.map(function (s) { return stepRow(s); }).join('');
+      if (showDone[g.id]) list += dn.map(function (s) { return stepRow(s); }).join('');
+      return '<article class="goal sticker">' +
+        '<div class="goal-head"><div><h3>' + esc(g.title) + '</h3>' + (g.why ? '<p class="why">' + esc(g.why) + '</p>' : '') + '</div>' +
+        '<button type="button" class="btn small" data-act="edit-goal" data-id="' + esc(g.id) + '">Editar</button></div>' +
+        '<div class="prog"><div class="bar"><i style="width:' + pct + '%"></i></div><span>' + dn.length + '/' + mine.length +
+        (g.due ? ' · alvo ' + fmt(g.due) : '') + '</span></div>' +
+        (list ? '<ul>' + list + '</ul>' : '<p class="empty">' + (mine.length ? 'Todos os passos feitos.' : 'Sem passos ainda.') + '</p>') +
+        '<div class="goal-foot"><button type="button" class="btn ghost" data-act="add-step" data-id="' + esc(g.id) + '">+ Adicionar passo</button>' +
+        (dn.length ? '<button type="button" class="btn ghost" data-act="toggle-done" data-id="' + esc(g.id) + '">' +
+          (showDone[g.id] ? 'Ocultar feitos' : 'Ver feitos (' + dn.length + ')') + '</button>' : '') +
+        '</div></article>';
+    }).join('');
+  }
+
+  function renderNext() {
+    if (filter !== 'all' && !goalOf(filter)) filter = 'all';
+    var sorted = goals.slice().sort(byOrder);
+    $('filters').innerHTML = sorted.length > 1
+      ? [['all', 'Todos']].concat(sorted.map(function (g) { return [g.id, g.title]; })).map(function (f) {
+          return '<button type="button" class="btn small" data-act="filter" data-id="' + esc(f[0]) + '" aria-pressed="' + (filter === f[0] ? 'true' : 'false') + '">' + esc(f[1]) + '</button>';
+        }).join('')
+      : '';
+    var open = steps.filter(function (s) { return !s.done && goalOf(s.goalId) && (filter === 'all' || s.goalId === filter); }).sort(byUrgency);
+    $('sum-proximos').textContent = open.length
+      ? open.length + (open.length === 1 ? ' passo em aberto' : ' passos em aberto') + ', em ordem de prioridade e prazo.'
+      : 'O que fazer, em ordem de prioridade e prazo.';
+    $('next').innerHTML = open.length
+      ? '<ol class="panel sticker">' + open.map(function (s, i) { return stepRow(s, { goal: filter === 'all', rank: i + 1, detail: true }); }).join('') + '</ol>'
+      : '<p class="empty">' + (steps.length ? 'Nada em aberto por aqui. Adicione o próximo passo em um objetivo.' : 'Os passos em aberto aparecem aqui, com o detalhe de como fazer.') + '</p>';
+  }
+
+  function renderBoard() {
+    $('sum-kanban').textContent = cards.length
+      ? cards.length + (cards.length === 1 ? ' projeto' : ' projetos') + '. Use as setas para mover entre colunas.'
+      : 'Seus projetos e em que pé cada um está.';
+    $('board').innerHTML = COLS.map(function (c, i) {
+      var mine = cards.filter(function (k) { return (k.col || 'afazer') === c[0]; }).sort(byOrder);
+      return '<section class="col"><div class="col-head"><h3><span class="dot" style="background:' + c[2] + '"></span>' + c[1] + '</h3><span class="count">' + mine.length + '</span></div>' +
+        mine.map(function (k) {
+          return '<article class="kcard sticker"><button type="button" class="kcard-body" data-act="edit-card" data-id="' + esc(k.id) + '">' +
+            '<span class="kcard-title">' + esc(k.title) + '</span>' + (k.note ? '<span class="kcard-note">' + esc(k.note) + '</span>' : '') + '</button>' +
+            '<div class="kmove"><button type="button" data-act="move" data-dir="-1" data-id="' + esc(k.id) + '" aria-label="Mover para a coluna anterior"' + (i === 0 ? ' disabled' : '') + '>←</button>' +
+            '<button type="button" data-act="move" data-dir="1" data-id="' + esc(k.id) + '" aria-label="Mover para a próxima coluna"' + (i === COLS.length - 1 ? ' disabled' : '') + '>→</button></div></article>';
+        }).join('') +
+        '<button type="button" class="add-card" data-act="add-card" data-id="' + c[0] + '">+ Projeto</button></section>';
+    }).join('');
+  }
+
+  function render() {
+    if (got.g && got.s) { renderGoals(); renderNext(); }
+    if (got.c) renderBoard();
+  }
+
+  /* diálogos */
+  function resetDel(btn, hide) { btn.hidden = hide; btn.dataset.armed = ''; btn.textContent = 'Excluir'; }
+  function armed(btn, label) { if (btn.dataset.armed) return true; btn.dataset.armed = '1'; btn.textContent = label; return false; }
+  function openStep(s, goalId) {
+    if (!goals.length) return;
+    editStep = s || null;
+    $('step-dlg-title').textContent = s ? 'Editar passo' : 'Novo passo';
+    $('step-goal').innerHTML = goals.slice().sort(byOrder).map(function (g) { return '<option value="' + esc(g.id) + '">' + esc(g.title) + '</option>'; }).join('');
+    $('step-title').value = s ? s.title || '' : '';
+    $('step-detail').value = s ? s.detail || '' : '';
+    $('step-goal').value = s ? s.goalId : goalId;
+    $('step-tag').value = s && TAG[s.tag] != null ? s.tag : 'acao';
+    $('step-due').value = s && s.due ? s.due : '';
+    $('step-pri').value = s && PR[s.priority] != null ? s.priority : 'media';
+    resetDel($('step-del'), !s);
+    $('step-dlg').showModal();
+  }
+  function openGoal(g) {
+    editGoal = g || null;
+    $('goal-dlg-title').textContent = g ? 'Editar objetivo' : 'Novo objetivo';
+    $('goal-title').value = g ? g.title || '' : '';
+    $('goal-why').value = g ? g.why || '' : '';
+    $('goal-due').value = g && g.due ? g.due : '';
+    resetDel($('goal-del'), !g);
+    $('goal-dlg').showModal();
+  }
+  function openCard(k, col) {
+    editCard = k || null;
+    $('card-dlg-title').textContent = k ? 'Editar projeto' : 'Novo projeto';
+    $('card-col').innerHTML = COLS.map(function (c) { return '<option value="' + c[0] + '">' + c[1] + '</option>'; }).join('');
+    $('card-title').value = k ? k.title || '' : '';
+    $('card-note').value = k ? k.note || '' : '';
+    $('card-col').value = k ? k.col || 'afazer' : col;
+    resetDel($('card-del'), !k);
+    $('card-dlg').showModal();
+  }
+
+  document.addEventListener('click', function (ev) {
+    var c = ev.target.closest('[data-close]');
+    if (c) { c.closest('dialog').close(); return; }
+    var b = ev.target.closest('[data-act]');
+    if (!b) return;
+    var id = b.dataset.id, act = b.dataset.act;
+    if (act === 'filter') { filter = id; renderNext(); return; }
+    if (act === 'toggle-done') { showDone[id] = !showDone[id]; renderGoals(); return; }
+    if (!db) return;
+    if (act === 'toggle') {
+      var s = steps.find(function (x) { return x.id === id; });
+      if (!s || busy[id]) return;
+      busy[id] = true;
+      db.doc('steps/' + id).update({ done: !s.done, doneAt: s.done ? null : new Date().toISOString() })
+        .then(ok, fail).then(function () { delete busy[id]; });
+    } else if (act === 'edit-step') {
+      openStep(steps.find(function (x) { return x.id === id; }));
+    } else if (act === 'add-step') {
+      openStep(null, id);
+    } else if (act === 'edit-goal') {
+      openGoal(goalOf(id));
+    } else if (act === 'edit-card') {
+      openCard(cards.find(function (x) { return x.id === id; }));
+    } else if (act === 'edit-entry') {
+      openEntry(ledger.find(function (x) { return x.id === id; }));
+    } else if (act === 'add-card') {
+      openCard(null, id);
+    } else if (act === 'move') {
+      var k = cards.find(function (x) { return x.id === id; });
+      if (!k || busy[id]) return;
+      var i = COLS.findIndex(function (c2) { return c2[0] === (k.col || 'afazer'); }) + Number(b.dataset.dir);
+      if (i < 0 || i >= COLS.length) return;
+      busy[id] = true;
+      db.doc('cards/' + id).update({ col: COLS[i][0], order: Date.now() }).then(ok, fail).then(function () { delete busy[id]; });
+    }
+  });
+  $('add-goal').addEventListener('click', function () { if (db) openGoal(null); });
+
+  $('step-form').addEventListener('submit', function (ev) {
+    ev.preventDefault();
+    var data = { title: $('step-title').value.trim(), detail: $('step-detail').value.trim(), goalId: $('step-goal').value,
+      tag: $('step-tag').value, due: $('step-due').value || null, priority: $('step-pri').value };
+    if (!data.title || !data.goalId) return;
+    var p;
+    if (editStep) p = db.doc('steps/' + editStep.id).update(data);
+    else { data.done = false; data.doneAt = null; data.order = Date.now(); p = db.collection('steps').add(data); }
+    $('step-dlg').close(); p.then(ok, fail);
+  });
+  $('step-del').addEventListener('click', function () {
+    if (!editStep || !armed(this, 'Toque de novo para excluir')) return;
+    $('step-dlg').close(); db.doc('steps/' + editStep.id).delete().then(ok, fail);
+  });
+  $('goal-form').addEventListener('submit', function (ev) {
+    ev.preventDefault();
+    var data = { title: $('goal-title').value.trim(), why: $('goal-why').value.trim(), due: $('goal-due').value || null };
+    if (!data.title) return;
+    var p;
+    if (editGoal) p = db.doc('goals/' + editGoal.id).update(data);
+    else { data.order = Date.now(); p = db.collection('goals').add(data); }
+    $('goal-dlg').close(); p.then(ok, fail);
+  });
+  $('goal-del').addEventListener('click', function () {
+    if (!editGoal || !armed(this, 'Excluir objetivo e passos?')) return;
+    var gid = editGoal.id;
+    $('goal-dlg').close();
+    steps.filter(function (s) { return s.goalId === gid; })
+      .reduce(function (p, s) { return p.then(function () { return db.doc('steps/' + s.id).delete(); }); }, Promise.resolve())
+      .then(function () { return db.doc('goals/' + gid).delete(); }).then(ok, fail);
+  });
+  $('card-form').addEventListener('submit', function (ev) {
+    ev.preventDefault();
+    var data = { title: $('card-title').value.trim(), note: $('card-note').value.trim(), col: $('card-col').value };
+    if (!data.title) return;
+    var p;
+    if (editCard) p = db.doc('cards/' + editCard.id).update(data);
+    else { data.order = Date.now(); p = db.collection('cards').add(data); }
+    $('card-dlg').close(); p.then(ok, fail);
+  });
+  $('card-del').addEventListener('click', function () {
+    if (!editCard || !armed(this, 'Toque de novo para excluir')) return;
+    $('card-dlg').close(); db.doc('cards/' + editCard.id).delete().then(ok, fail);
+  });
+
+  $('add-entry').addEventListener('click', function () { if (db) openEntry(null); });
+  $('entry-form').addEventListener('submit', function (ev) {
+    ev.preventDefault();
+    var amount = parseAmount($('entry-amount').value);
+    var data = { type: $('entry-type').value, date: $('entry-date').value || today(), desc: $('entry-desc').value.trim(), amount: amount };
+    if (!data.desc) return;
+    if (amount == null) { $('entry-amount').focus(); $('entry-amount').select(); return; }
+    var p;
+    if (editEntry) p = db.doc('ledger/' + editEntry.id).update(data);
+    else { data.order = Date.now(); p = db.collection('ledger').add(data); }
+    $('entry-dlg').close(); p.then(ok, fail);
+  });
+  $('entry-del').addEventListener('click', function () {
+    if (!editEntry || !armed(this, 'Toque de novo para excluir')) return;
+    $('entry-dlg').close(); db.doc('ledger/' + editEntry.id).delete().then(ok, fail);
+  });
+
+  function rows(snap) { return snap.docs.map(function (d) { var o = Object.assign({}, d.data()); o.id = d.id; return o; }); }
+
+  function start(ns) {
+    db = ns;
+    if (!db) {
+      $('sum-objetivos').textContent = 'Seus dados não puderam ser abertos nesta visita.';
+      $('side-foot').textContent = '';
+      say('Não consegui abrir os dados deste aparelho.');
+      return;
+    }
+    var timer = setTimeout(function () { say('Ainda não consegui carregar seus dados. Eles aparecem assim que a conexão voltar.'); }, 10000);
+    function settle(snap) { if (!snap.metadata || !snap.metadata.fromCache) { clearTimeout(timer); ok(); } }
+    function dead() { clearTimeout(timer); $('sum-objetivos').textContent = 'Não foi possível carregar seus dados.'; say('Feche e abra o plano de novo para tentar outra vez.'); }
+    db.collection('goals').onSnapshot(function (snap) { goals = rows(snap); got.g = true; settle(snap); render(); }, dead);
+    db.collection('steps').onSnapshot(function (snap) { steps = rows(snap); got.s = true; settle(snap); render(); }, dead);
+    db.collection('cards').onSnapshot(function (snap) { cards = rows(snap); got.c = true; settle(snap); render(); }, dead);
+    db.collection('ledger').onSnapshot(function (snap) { ledger = rows(snap); gotL = true; settle(snap); renderLedger(); }, dead);
+  }
+  /* dados guardados só neste aparelho */
+  function localDb() {
+    var KEY = 'plano-insta-ebook-v1', NAMES = ['goals', 'steps', 'cards', 'ledger'], subs = {}, data;
+    function clean(src) {
+      var out = {};
+      NAMES.forEach(function (n) {
+        out[n] = {};
+        var c = src && src[n];
+        if (c && typeof c === 'object' && !Array.isArray(c)) Object.keys(c).forEach(function (id) {
+          if (c[id] && typeof c[id] === 'object' && !Array.isArray(c[id])) out[n][id] = c[id];
+        });
+      });
+      return out;
+    }
+    function load() { var raw = null; try { raw = JSON.parse(localStorage.getItem(KEY)); } catch (e) {} data = clean(raw); }
+    function save() { localStorage.setItem(KEY, JSON.stringify(data)); }
+    function snap(n) { return { docs: Object.keys(data[n]).map(function (id) { return { id: id, data: function () { return data[n][id]; } }; }) }; }
+    function emit(n) { (subs[n] || []).forEach(function (cb) { cb(snap(n)); }); }
+    function write(n, fn) {
+      return new Promise(function (res, rej) {
+        try { fn(); save(); emit(n); res(); } catch (e) { load(); emit(n); rej(e); }
+      });
+    }
+    load();
+    return {
+      collection: function (n) {
+        return {
+          onSnapshot: function (cb) { (subs[n] = subs[n] || []).push(cb); setTimeout(function () { cb(snap(n)); }, 0); return function () {}; },
+          add: function (d) { var id = Date.now().toString(36) + Math.random().toString(36).slice(2, 7); return write(n, function () { data[n][id] = d; }); }
+        };
+      },
+      doc: function (p) {
+        var a = p.split('/'), n = a[0], id = a[1];
+        return {
+          update: function (d) { return write(n, function () { if (!data[n][id]) throw new Error('missing'); data[n][id] = Object.assign({}, data[n][id], d); }); },
+          delete: function () { return write(n, function () { delete data[n][id]; }); }
+        };
+      },
+      exportAll: function () { return { app: 'plano-insta-ebook', version: 1, savedAt: new Date().toISOString(), data: data }; },
+      counts: function (src) { var c = clean(src); return NAMES.map(function (n) { return Object.keys(c[n]).length; }); },
+      importAll: function (src) { var prev = data; data = clean(src); try { save(); } catch (e) { data = prev; throw e; } NAMES.forEach(emit); }
+    };
+  }
+
+  /* backup */
+  var pending = null;
+  function lastBackup() {
+    var d = null; try { d = localStorage.getItem('plano-last-backup'); } catch (e) {}
+    $('sum-backup').textContent = d
+      ? 'Seus dados ficam só neste aparelho. Último backup: ' + fmt(d.slice(0, 10)) + ' ' + d.slice(0, 4) + '.'
+      : 'Seus dados ficam só neste aparelho. Você ainda não salvou um backup.';
+  }
+  $('bk-save').addEventListener('click', function () {
+    var name = 'plano-backup-' + today() + '.json';
+    var text = JSON.stringify(db.exportAll(), null, 1);
+    var file = null; try { file = new File([text], name, { type: 'application/json' }); } catch (e) {}
+    function marked() { try { localStorage.setItem('plano-last-backup', new Date().toISOString()); } catch (e) {} lastBackup(); }
+    function download() {
+      var url = URL.createObjectURL(new Blob([text], { type: 'application/json' }));
+      var a = document.createElement('a'); a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(function () { URL.revokeObjectURL(url); }, 4000); marked();
+    }
+    if (file && navigator.canShare && navigator.canShare({ files: [file] })) {
+      navigator.share({ files: [file], title: name }).then(marked, function (e) { if (!e || e.name !== 'AbortError') download(); });
+    } else download();
+  });
+  $('bk-file').addEventListener('change', function () {
+    var f = this.files && this.files[0];
+    pending = null; $('bk-restore').hidden = true; $('bk-info').hidden = true;
+    if (!f) return;
+    var r = new FileReader();
+    r.onload = function () {
+      var obj = null; try { obj = JSON.parse(String(r.result)); } catch (e) {}
+      $('bk-info').hidden = false;
+      if (!obj || obj.app !== 'plano-insta-ebook' || !obj.data || typeof obj.data !== 'object') {
+        $('bk-info').textContent = 'Este arquivo não é um backup deste app. Escolha um arquivo plano-backup.';
+        return;
+      }
+      var c = db.counts(obj.data);
+      pending = obj.data;
+      $('bk-info').textContent = 'Este backup tem ' + c[0] + ' objetivos, ' + c[1] + ' passos, ' + c[2] + ' projetos e ' + c[3] + ' lançamentos' +
+        (obj.savedAt ? ', salvo em ' + fmt(String(obj.savedAt).slice(0, 10)) + ' ' + String(obj.savedAt).slice(0, 4) : '') + '.';
+      $('bk-restore').hidden = false; $('bk-restore').dataset.armed = ''; $('bk-restore').textContent = 'Restaurar e substituir';
+    };
+    r.onerror = function () { $('bk-info').hidden = false; $('bk-info').textContent = 'Não consegui ler o arquivo. Tente escolher de novo.'; };
+    r.readAsText(f);
+  });
+  $('bk-restore').addEventListener('click', function () {
+    if (!pending || !armed(this, 'Toque de novo para substituir tudo')) return;
+    try { db.importAll(pending); } catch (e) { $('bk-info').textContent = 'Não deu para restaurar: o aparelho recusou salvar os dados.'; return; }
+    pending = null; this.hidden = true; $('bk-file').value = '';
+    $('bk-info').textContent = 'Backup restaurado. Seus dados já estão nas outras telas.';
+  });
+
+  start(localDb());
+  lastBackup();
+  if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(function () {});
+  if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(function () {});
+})();
+</script>
+</body>
+</html>
